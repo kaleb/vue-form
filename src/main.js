@@ -1,32 +1,17 @@
-import { config } from './config';
-import messages from './components/messages';
-import vueForm from './components/vue-form';
-import vueFormValidator from './directives/vue-form-validator';
-import validate from './components/validate';
-import field from './components/field';
-import { validators } from './validators';
 
-export default {
-  install(Vue) {
-    Vue.component(config.formComponent, vueForm);
-    Vue.component(config.validateComponent, validate);
-    Vue.component(config.messagesComponent, messages);
-    Vue.component(config.fieldComponent, field);
-    Vue.directive('vue-form-validator', vueFormValidator);
-  },
-  config,
-  addValidator(key, fn) {
-    validators[key] = fn;
-  },
-  mixin: {
-    components: {
-      [config.formComponent]: vueForm,
-      [config.validateComponent]: validate,
-      [config.messagesComponent]: messages,
-      [config.fieldComponent]: field
-    },
-    directives: {
-      vueFormValidator
-    }
+import VueFormConfigMixin from './config';
+
+export default class VueForm extends VueFormConfigMixin {
+  static install(Vue, ...options) {
+    Vue.mixin(new this(...options));
   }
-};
+  static get installed() {
+    return !!this.install.done;
+  }
+  static set installed(val) {
+    this.install.done = val;
+  }
+}
+
+// Allow to be used as mixin itself
+VueFormConfigMixin.call(VueForm);

@@ -1,8 +1,20 @@
-import { config } from '../config';
-import { validators } from '../validators';
-import { getClasses } from '../util';
+import { getClasses, VueFormConfig } from '../util';
 
 export default {
+  inject: {config: VueFormConfig},
+  provide() {
+    const c = this.config;
+    return {
+      [VueFormConfig]: {
+        fieldTag: c.fieldTag,
+        messagesTag: c.messagesTag,
+        validators: c.validators,
+        validateClasses: c.validateClasses,
+        inputClasses: c.inputClasses,
+        formstate: this.state,
+      },
+    };
+  },
   render(h) {
     return h(
       'form', {
@@ -21,7 +33,13 @@ export default {
     );
   },
   props: {
-    state: Object
+    state: Object,
+    tag: {
+      type: String,
+      default() {
+        return this.config.formTag;
+      },
+    },
   },
   data() {
     return {};
@@ -112,10 +130,9 @@ export default {
   },
   computed: {
     className() {
-      const c = config.classes.form;
-      const s = this.state;
-      const classes = getClasses(c, s);
-      classes[c.submitted] = s.$submitted;
+      const c = this.config.formClasses;
+      const classes = getClasses(c, this.state);
+      classes[c.submitted] = this.state.$submitted;
       return classes;
     }
   }

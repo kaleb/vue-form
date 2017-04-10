@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { VueFormConfig } from '../util';
 
 function findLabel (nodes) {
   if(!nodes) {
@@ -15,6 +15,7 @@ function findLabel (nodes) {
 }
 
 export default {
+  inject: {config: VueFormConfig},
   render(h) {
     const children = [];
     const field = this.formstate[this.name];
@@ -59,7 +60,9 @@ export default {
     },
     tag: {
       type: String,
-      default: config.messagesTag
+      default() {
+        return this.config.messagesTag;
+      },
     },
     autoLabel: Boolean,
   },

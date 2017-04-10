@@ -1,7 +1,7 @@
-import { config } from '../config';
-import { getVModelAndLabel, randomId } from '../util';
+import { getVModelAndLabel, randomId, VueFormConfig } from '../util';
 
 export default {
+  inject: {config: VueFormConfig},
   render(h) {
     let foundVnodes = getVModelAndLabel(this.$slots.default);
     const vModelnodes = foundVnodes.vModel;
@@ -26,7 +26,9 @@ export default {
   props: {
     tag: {
       type: String,
-      default: config.fieldTag
+      default() {
+        return this.config.fieldTag;
+      },
     },
     autoLabel: {
       type: Boolean,

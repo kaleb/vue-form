@@ -1,4 +1,3 @@
-import { config } from '../config';
 import { validators } from '../validators';
 import { vModelValue, getName } from '../util';
 

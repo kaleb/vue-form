@@ -86,3 +86,16 @@ export function hyphenate (str) {
 export function randomId() {
   return Math.random().toString(36).substr(2, 10);
 }
+
+export const VueFormConfig = typeof Symbol === 'function' ? Symbol() : `VueFormConfig_${randomId}`;
+
+// Adapted from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
+export const assign = typeof Object.assign === 'function' ? Object.assign : function(target, ...sources) {
+  const hasOwn = Object.prototype.hasOwnProperty;
+  const to = Object(target);
+  sources.forEach(source => {
+    if (source != null) for (let key in source) if (hasOwn.call(source, key)) {
+      to[key] = source[key];
+    }
+  });
+};

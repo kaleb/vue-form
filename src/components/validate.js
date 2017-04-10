@@ -1,8 +1,7 @@
-import { config } from '../config';
-import { getVModelAndLabel, vModelValue, addClass, removeClass, getName, hyphenate, randomId, getClasses } from '../util';
-import { validators } from '../validators';
+import { getVModelAndLabel, vModelValue, addClass, removeClass, getName, hyphenate, randomId, getClasses, VueFormConfig, assign } from '../util';
 
 export default {
+  inject: {config: VueFormConfig},
   render(h) {
     let foundVnodes = getVModelAndLabel(this.$slots.default);
     const vModelnodes = foundVnodes.vModel;
@@ -41,36 +40,43 @@ export default {
     autoLabel: Boolean,
     tag: {
       type: String,
-      default: 'div'
+      default() {
+        return this.config.fieldTag;
+      },
     }
   },
   data() {
     return {
       name: '',
-      formstate: {},
-      fieldstate: {}
+      formstate: this.state || this.config.formstate,
+      fieldstate: {},
     };
   },
   methods: {
     getClasses(classConfig) {
-      var s = this.fieldstate;
       return Object.keys(s.$error).reduce((classes, error) => {
         classes[classConfig.invalid + '-' + hyphenate(error)] = true;
         return classes;
-      }, getClasses(classConfig, s));
+      }, getClasses(classConfig, this.fieldstate));
     }
   },
   computed: {
     className() {
-      return this.getClasses(config.classes.validate);
+      return this.getClasses(this.config.validateClasses);
     },
     inputClassName() {
-      return this.getClasses(config.classes.input);
+      return this.getClasses(this.config.inputClasses);
+    },
+    validators() {
+      const {validators} = this.config;
+      if (!this.custom) {
+        return validators;
+      }
+      return assign({}, validators, this.custom);
     }
   },
   mounted() {
     this.fieldstate.$name = this.name;
-    this.formstate = this.state || this.$parent.state;
     this.formstate._addControl(this.fieldstate);
 
     const vModelEls = this.$el.querySelectorAll('[vue-form-validator]');
@@ -136,7 +142,7 @@ export default {
         this._hasFocused = true;
       },
       _hasFocused: false,
-      _validators: {},
+      _validators: this.validators,
       _validate(vnode) {
         this.$pending = true;
         let isValid = true;
@@ -179,7 +185,7 @@ export default {
         });
 
         if (pending.promises.length) {
-          config.Promise.all(pending.promises).then((results) => {
+          this.config.Promise.all(pending.promises).then((results) => {
 
             // only concerned with the last promise results, in case
             // async responses return out of order
@@ -208,14 +214,6 @@ export default {
         }
       }
     }
-
-    // add custom validators
-    if (this.custom) {
-      Object.keys(this.custom).forEach((prop) => {
-        this.fieldstate._validators[prop] = this.custom[prop];
-      });
-    }
-
   },
   destroyed() {
     this.formstate._removeControl(this.fieldstate);
